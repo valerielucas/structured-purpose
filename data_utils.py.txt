@@ -1,0 +1,143 @@
+"""Imports required Python modules."""
+from itertools import combinations
+from itertools import repeat
+from csv import DictReader
+
+
+"""
+read_csv_rows: Read a CSV file's contents into a list of rows.
+
+Parameters
+csv_file: CSV file in string format -- with columns separated by columns and rows separated by a new line.
+
+Returns
+rows: List of dictionaries -- data in row orientation.
+"""
+def read_csv_rows(csv_file: str) -> list[dict[str, str]]:
+    file_handle = open(csv_file, "r", encoding="utf8")
+    csv_reader = DictReader(file_handle)
+    rows: list[dict[str, str]] = []
+    for row in csv_reader:
+        rows.append(row)
+    file_handle.close()
+    return rows
+
+
+"""
+column_values: Returns a single column of data.
+
+Parameters
+table: List of dictionaries -- data in row orientation.
+key: String -- the key of the dictionary contained within each list.
+
+Returns
+column: A list of strings -- the values of each variable in the data.
+"""
+def column_values(table: list[dict[str, str]], key: str) -> list[str]:
+    column: list[str] = []
+    for row in table:
+        column.append(row[key])
+    return column
+
+
+"""
+columnar: Transforms row data to column data.
+
+Parameters
+data_rows: List of dictionaries -- data in row orientation.
+
+Returns
+data_cols: Dictionary of lists -- data in column orientation, each key is a variable name.
+"""
+def columnar(data_rows: list[dict[str, str]]) -> dict[str, list[str]]:
+    data_cols: dict[str, list[str]] = {}
+    for i in range(len(data_rows)):
+        for variable_name in data_rows[i]:
+            column = column_values(data_rows, variable_name)
+            data_cols[variable_name] = column
+    return data_cols
+
+
+"""
+sample_initializer: Begins the process of building sample sets with a single demographic target.
+
+Parameters
+char: String -- name of the variable used to initialize a set of sites.
+
+Returns
+total_sample_list: List of list of integers -- integers represent project numbers and each list should have one integer.
+"""
+def sample_initializer(char: str) -> list[list[int]]:
+    total_sample_list: list[list[int]] = []
+    project_char = project_counter(char)
+    for i in range(len(project_char)):
+        project_char_list = [project_char[i]]
+        total_sample_list.append(project_char_list)
+    return total_sample_list
+
+
+"""
+sample_adder: Continues the process of building sample sets with further demographic targets.
+
+Parameters
+sample_list: A list of lists of integers -- integers in the list represent site numbers.
+char: String -- each string represents a desired site characteristic.
+
+Returns
+out: A list of lists of project numbers -- a single list of project numbers signifies a possible set of sites for qualitative sampling.
+"""
+def sample_adder(sample_list: list[list[int]], char: str) -> list[list[int]]:
+    """Continues the process of building sample sets with further demographic targets."""
+    project_char = project_counter(char)
+    flat_list = []
+    for sublist in sample_list:
+        flat_list.append(sublist)
+    out = []
+    for i in flat_list:
+        index = i
+        for j in project_char:
+            k = [j]
+            pairs = index + k
+            out.append(pairs)
+    return out
+
+
+"""
+sample_checker: Checks input samples for conditions met, returns a subsample of exclusively samples met.
+
+Parameters
+sample_of_nine: List of list of integers -- a single list of project numbers signifies a possible set of sites for qualitative sampling.
+demographic: String -- each string represents a desired site characteristic.
+target: Integer -- targeted minimum number of projects with a desired site characteristic.
+
+Returns
+subsample_of_nine: List of list of integers -- a single list of project numbers signifies a possible set of sites for qualitative sampling.
+"""
+def sample_checker(sample_of_nine: list[list[int]], demographic: str, target: int) -> list[list[int,]]:
+    subsample_of_nine: list[list[int,]]= []
+    for sample in sample_of_nine:
+        i = 0
+        total: int = 0
+        while i < 8:
+            total += int(demographic[int(sample[i])])
+            i += 1
+        if total >= target:
+            subsample_of_nine.append(sample)
+    return subsample_of_nine
+
+
+"""
+project_counter: Checks each project for a given attribute.
+
+Parameters
+char: String -- name of a project characteristic.
+
+Returns
+project_char: List of integers -- integers represent projects with a positive value for the characteristic.
+"""
+def project_counter(char: str) -> list[int]:
+    project_char: list[int] = []
+    for i in range(len(char) - 1):
+        if int(char[i]) >= 1:
+            project_char.append(i)
+    return project_char
